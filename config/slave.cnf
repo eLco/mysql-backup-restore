@@ -1,0 +1,13 @@
+[mysqld]
+log_bin=mysql-bin
+relay_log=/var/lib/mysql/mysql-relay-bin
+log_slave_updates=1
+read_only=1
+server_id=2
+
+master-info-repository=TABLE
+relay-log-info-repository=TABLE
+relay-log-recovery=1
+
+log-error=/var/log/mysql/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid

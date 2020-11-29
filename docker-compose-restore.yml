@@ -1,0 +1,29 @@
+version: '3.1'
+ 
+services:
+  restore-db:
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+    - db_restore:/var/lib/mysql
+    - log_restore:/var/log/mysql
+    - ./config/restore.cnf:/etc/mysql/conf.d/restore.cnf
+    - ./restore:/opt/restore
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+  db-tools:
+    image: elcodev/mysql-tools:v1.0
+    command: ["bash", "-c" ,"sleep 3600"]
+    environment:
+      AWS_ACCESS_KEY_ID: XXXX
+      AWS_SECRET_ACCESS_KEY: XXXX
+      AWS_DEFAULT_REGION: eu-central-1
+      S3_BUCKET: mysql-backup-XXXXXX
+    volumes:
+    - ./restore:/opt/restore
+    - ./scripts:/opt/scripts
+volumes:
+  db_restore: {}
+  log_restore: {}

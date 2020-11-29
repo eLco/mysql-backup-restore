@@ -1,0 +1,48 @@
+version: '3.1'
+ 
+services:
+  master-db:
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+    - db_master:/var/lib/mysql
+    - log_master:/var/log/mysql
+    - ./config/master.cnf:/etc/mysql/conf.d/master.cnf
+    - ./config/init_master.sh:/docker-entrypoint-initdb.d/init_master.sh
+    - ./config/create_db.sh:/docker-entrypoint-initdb.d/create_db.sh
+    - ./config/test_db:/docker-entrypoint-initdb.d/test_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+  slave-db:
+    depends_on:
+    - master-db
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+    volumes:
+    - db_slave:/var/lib/mysql
+    - log_slave:/var/log/mysql
+    - ./config/slave.cnf:/etc/mysql/conf.d/slave.cnf
+    - ./config/init_slave.sh:/docker-entrypoint-initdb.d/init_slave.sh
+    - ./backup:/opt/backup
+  db-tools:
+    image: elcodev/mysql-tools:v1.0
+    command: ["bash", "-c" ,"sleep 3600"]
+    environment:
+      AWS_ACCESS_KEY_ID: XXXX
+      AWS_SECRET_ACCESS_KEY: XXXX
+      AWS_DEFAULT_REGION: eu-central-1
+      S3_BUCKET: mysql-backup-XXXXXX
+    volumes:
+    - ./backup:/opt/backup
+    - ./scripts:/opt/scripts
+volumes:
+  db_master: {}
+  db_slave: {}
+  log_master: {}
+  log_slave: {}
